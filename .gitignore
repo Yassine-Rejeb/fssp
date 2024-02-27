@@ -1,0 +1,61 @@
+.DS_Store
+node_modules
+/dist
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging files
+*.egg-info/
+*.eggs/
+dist/
+build/
+
+# PyInstaller files
+# .app/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Automatically generated files
+*.pot
+*.mo
+*.mi
+*.blg
+*.bak
+*.swp
+*.pickle
+*.rdb
+
+# SQLite database files
+*.db3
+*.sqlite3
+
+# Virtualenv directories
+env/
+venv/
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
