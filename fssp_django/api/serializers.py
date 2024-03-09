@@ -7,9 +7,9 @@ class userAccountSerializer(serializers.ModelSerializer):
         model = userAccount
         fields = '__all__'
 
-class emailVerificationKeySerializer(serializers.ModelSerializer):
+class emailVerificationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = emailVerificationKey
+        model = emailVerification
         fields = '__all__'
     
 class objectSerializer(serializers.ModelSerializer):

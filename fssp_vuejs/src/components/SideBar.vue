@@ -1,7 +1,6 @@
 <script>
-import profileImage from '@/assets/images/profile.png';
-
-import { useRoute } from 'vue-router'
+//import profileImage from '@/assets/images/profile.png';
+import store from '@/store';
 
 const baseLinks = [
 { text: 'Notifications', route: '/notifications', icon: 'mdi-bell' },
@@ -22,68 +21,95 @@ const secretLinks = [
   { text: 'Secret Activities', route: '/secrets/activity', icon: 'mdi-history' },
 ];
 
-const logout = [
-  { text: 'Logout', route: '/logout', icon: 'mdi-logout' },
-];
-
-
-
 export default {
-    setup() {
-    const route = useRoute();
-    const currentUrl = route.fullPath;
-    console.log(currentUrl);
-
+  data() {
     return {
-      currentUrl,
+      drawerIsExtended: false,
+      authenticated: ref(store.state.authenticated),
+      baseLinks,
+      fileLinks,
+      secretLinks,
+      //profileImage: profileImage,
     };
   },
-    data() {
-        return {
-            baseLinks,
-            fileLinks,
-            secretLinks,
-            logout,
-            profileImage: profileImage,
-      };
+  watch: {
+    '$vuetify.application.left'() {
+      this.drawerIsExtended = this.$vuetify.application.left >= 200;
+      console.log("Nav Headings appear:",this.drawerIsExtended);
     },
-    theme: {
-    defaultTheme: 'dark'
-    }
+  },
 };
-
 </script>
 
 <script setup>
-import store from "../store";
+let DJANGO_API_URL = "http://127.0.0.1:8000/api/";
 import { ref , computed } from "vue";
 import { useTheme } from "vuetify";
-
 
 const darkTheme = ref(false);
 const theme = useTheme();
 
+darkTheme.value = localStorage.getItem("Dark_Theme") === "true";
+theme.global.name.value = darkTheme.value ? "dark" : "light";
+// store.commit("setTheme", darkTheme.value);
 
 function changeTheme() {
   darkTheme.value = !darkTheme.value;
   theme.global.name.value = darkTheme.value ? "dark" : "light";
-  store.commit("setTheme", darkTheme.value);
+  localStorage.setItem("Dark_Theme", darkTheme.value);
 }
+
+const user = ref({
+  username: "test",
+  fullname: "John Doe",
+  email: "test",
+  status2FA: false,
+  criticalLockStat: false,
+  idleTime: 0,
+});
+
+let profileImage = ref("");
+
+// Get the user details from the API
+import axios from "axios";
+axios.get(DJANGO_API_URL + "get_user_details", {withCredentials: true,})
+  .then((response) => {
+    user.value = response.data;
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+
+// Get the user's profile image from the API and save it in @/assets/images/profile.png of the vuejs app filesystem
+axios.get(DJANGO_API_URL + "get_profile_pic", {withCredentials: true,})
+  .then((response) => {
+    let arr = response.data
+    profileImage.value = "data:image/png;base64,"+arr; 
+    console.log(profileImage.value);
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+
+
 </script>
 
 <template>
-    <VNavigationDrawer
+    <!--  -->
+    <VNavigationDrawer 
     expand-on-hover
     rail
     permanent
     color="primary"
+    @mouseenter="drawerIsExtended=true"
+    @mouseleave="drawerIsExtended=false"
     class="elevation-13"
     >
     <VList>
         <VListItem
-        :prepend-avatar="profileImage"
-        title="John Doe"
-        subtitle="Email"
+          :prepend-avatar="profileImage"
+          :title="user.fullname"
+          :subtitle="user.email"
         ></VListItem>
     </VList>
 
@@ -103,8 +129,9 @@ function changeTheme() {
 
     <v-divider></v-divider>
 
-    <p class="sidebar-heading">File Management</p>
-
+    <template v-if="drawerIsExtended" >
+      <p class="sidebar-heading">File Management</p>
+    </template>
     <!-- <VList density="compact" nav> -->
         <VListItem
             v-for="link in fileLinks"
@@ -118,7 +145,11 @@ function changeTheme() {
 
     <v-divider></v-divider>
 
-    <p class="sidebar-heading underlined" >Secret Management</p>
+
+    <template v-if="drawerIsExtended" >
+          <p class="sidebar-heading" >Secret Management</p>
+    </template>
+
 
     <!-- <VList density="compact" nav> -->
         <VListItem
@@ -145,16 +176,15 @@ function changeTheme() {
 
     <!-- <VList density="compact" nav> -->
         <VListItem
-            v-for="link in logout"
-            :key="link.text"
-            :prepend-icon="link.icon"
-            :title="link.text"
-            :value="link.text"
-            :to="link.route"
-            >
+            key="Logout"
+            prepend-icon="mdi-logout"
+            title="Logout"
+            value="Logout"
+            to="/Logout"
+        >
         </VListItem>
     </VList>
-
+    <p>{{ authenticated.value }}</p>
     </VNavigationDrawer>
 </template>
 

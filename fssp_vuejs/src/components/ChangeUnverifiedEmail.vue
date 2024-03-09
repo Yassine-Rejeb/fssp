@@ -7,27 +7,41 @@ import store from "../store";
 
 let showAlert = ref(false);
 let alertContent = ref("");
+let alertType = ref("");
 
 function sendLoginData() {
   let data = new FormData();
-  data.append("email", form.value.email);
+  data.append("current_email", form.value.currentEmail);
   data.append("password", form.value.password);
+  data.append("new_email", form.value.newEmail);
   axios
-    .post(DJANGO_API_URL + "login", data, {withCredentials: true,})
+    .post(DJANGO_API_URL + "change_unverifiable_email", data)
     .then((response) => {
       console.log(response);
-      if (response.data.message === "login successful" || response.data.message === "Already logged in") {
-        console.log("Logged in");
-        window.location.href = "/notifications";
-      } else if (response.data.message === "Credentials do not match") {
-        console.log("Invalid Credentials");
-        alertContent.value = "Invalid Credentials";
-        showAlert.value = true;
-      } else if (response.data.message === "Please verify your email before logging in. The verification email has already been sent to you. If you have made a mistake, please change your email address.") {
+      if (response.data.message === "Email updated successfully") {
         // Change the showAlert, alertContent, and alertType values to display an alert
         showAlert.value = true;
-        console.log("Please verify your email before logging in.");
-        alertContent.value = "<p>Please verify your email before logging in.<br>If you have entered an incorrect email, <br>please follow <a href='/change_unverified_email'>THIS LINK</a> to remediate the situation.</p>";
+        alertContent.value = "Email updated successfully";
+        alertType.value = "success";
+        // Redirect the user to the login page after 3 seconds
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 3000);
+      } else if (response.data.message === "Credentials do not match" || response.data.message === "User does not exist") {
+        //alert("Invalid Credentials");
+        alertContent.value = "Invalid Credentials";
+        showAlert.value = true;
+        alertType.value = "error";
+      } else if (response.data.message === "Email already taken") {
+        // Change the showAlert, alertContent, and alertType values to display an alert
+        showAlert.value = true;
+        alertContent.value = "Email already registered";
+        alertType.value = "error";
+      } else if (response.data.message === "Email already verified") {
+        // Change the showAlert, alertContent, and alertType values to display an alert
+        showAlert.value = true;
+        alertContent.value = "You have already verified your email, this action is not permitted anymore.";
+        alertType.value = "error";
       }
     })
     .catch((error) => {
@@ -36,14 +50,15 @@ function sendLoginData() {
 }
 
 const form = ref({
-  email: "",
+  currentEmail: "",
   password: "",
+  newEmail: "",
 });
 
 const isLoading = ref(false);
 
 function submit() {
-  if (form.value.email === "") {
+  if (form.value.currentEmail === "" || form.value.password === "" || form.value.newEmail === "") {
     return;
   }
 
@@ -51,7 +66,7 @@ function submit() {
   setTimeout(() => {
     isLoading.value = false;
     sendLoginData();
-  }, 3000);
+  }, 1500);
 }
 
 const rules = {
@@ -98,14 +113,14 @@ function changeTheme() {
     <v-row justify="center">
       <v-col md="4">
         <v-card style="width: 700px;" class="pa-4">
-          <v-card-title class="text-center">Welcome Back</v-card-title>
+          <v-card-title class="text-center">Correct your email</v-card-title>
           <v-card-item>
             <v-form @submit.prevent="submit">
               <v-text-field
                 prepend-inner-icon="mdi-email"
                 :rules="[rules.required, rules.email]"
-                v-model="form.email"
-                label="Email"
+                v-model="form.currentEmail"
+                label="Current Email"
               ></v-text-field>
 
               <v-text-field
@@ -116,31 +131,30 @@ function changeTheme() {
                 label="Password"
               ></v-text-field>
 
-              <router-link
-                to="/ForgotPass"
-                v-model="form.forgot"
-                style="text-align: center; display: block; color: #1976d2;"
-                class="text-decoration-none">
-                  Forgot Your Password!
-              </router-link>
+              <v-text-field
+                prepend-inner-icon="mdi-email"
+                :rules="[rules.required, rules.email]"
+                v-model="form.newEmail"
+                label="New Email"
+              ></v-text-field>
 
               <v-btn
                 color="primary"
                 variant="elevated"
                 type="submit"
                 block
-                class="mt-2"
-              >
-                Login
+                class="mt-2">
+                Change Email
               </v-btn>
             </v-form>
           </v-card-item>
 
           <v-card-action>
             <div class="mx-4">
+              <v-btn block to="/login"> Login </v-btn>
               <v-btn block to="/register"> Register </v-btn>
             </div>
-          <v-alert class="mt-3" v-if="showAlert" type="error" closable @input="showAlert = false" v-html="alertContent" ></v-alert>
+          <v-alert class="mt-3" v-if="showAlert" :type="alertType" closable @input="showAlert = false">{{ alertContent }}</v-alert>
           </v-card-action>
         </v-card>
       </v-col>

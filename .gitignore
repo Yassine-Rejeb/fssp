@@ -1,6 +1,12 @@
 .DS_Store
 node_modules
 /dist
+.tmp*
+PFE
+fssp_django/api/migrations/
+desktop.ini
+fssp_django/smtp_data.json
+fssp_django/azure-identity.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

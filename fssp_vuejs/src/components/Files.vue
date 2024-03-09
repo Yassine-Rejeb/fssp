@@ -36,8 +36,8 @@ export default {
     <v-layout wrap fluid style="overflow-y: auto;" class="flex-column">
         <v-flex xs12 sm6 md6 lg1 style="height: 350px;bg-olor: '#333333';" 
         v-for="file in files" :key="file.Filename" >
-    <v-card style="height: 280px;width: 700px;" 
-            variant="outlined" flat color="#aac7e8" class="yellow-card d-flex yellow-card
+    <v-card style="height: 280px;width: 800px;" 
+            variant="outlined" flat color="#aac7e8" class="yellow-card d-flex
             ma-7 pa-8 text-center d-block rounded-lg elevation-15 mx-auto">
         <v-card-text class="flex-column d-flex align-center justify-center mt-4" color="light-blue lighten-4">
             <div style="width: 45vh;overflow-y: auto;">

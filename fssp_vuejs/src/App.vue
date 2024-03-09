@@ -1,53 +1,39 @@
 <script setup>
+import axios from "axios";
 import SideBar from "./components/SideBar.vue";
-// import Files from "./components/Files.vue"
-// import SharedFiles from './components/SharedFiles.vue'
-// import Secrets  from './components/Secrets.vue'
-// import SharedSecrets  from './components/SharedSecrets.vue'
-import Login from './components/Login.vue'
-import Register from './components/Register.vue'
-import { RouterView } from "vue-router"
-import Store from "./store"
+import { useStore } from 'vuex';
+import { ref } from "vue";
 
-let authenticated = Store.state.authenticated
-let theme = "dark"
-</script>
+// Use the store to watch for changes in the authenticated state
+const store = useStore()
+const authenticated = ref(false)
+const showSideBar = ref(false)
 
-<script >
-export default {
-setup() {
-    const route = useRoute()
-    const currentUrl = route.path
-
-    return {
-      currentUrl,
+store.watch(
+  (state) => state.authenticated,
+  (newVal) => {
+    if (newVal) {
+      authenticated.value = newVal
+      showSideBar.value = true
+      // console.log('Authenticated value changed:', newVal, 'showSideBar:', showSideBar.value, 'authenticated:', authenticated.value);
     }
-  },
-};
-// Log the current URL
+  }
+)
+// console.log("Authenticated:", authenticated.value, "showSideBar:", showSideBar.value);
+
+// store.dispatch("checkAuthentication");
+
 </script>
 
-
-<template  >
-  <VApp id="app" >
+<template>
+  <VApp id="app">
+    <!-- <p> Authenticated: {{ authenticated }}</p> -->
     <!-- Side Bar -->
-
-    <Login v-if="!authenticated" />
-    <!-- <Register v-if="!authenticated" /> -->
-    
-    <SideBar v-if="authenticated" />
-    <!-- Files -->
-    <VContent class="ml-16" v-if="authenticated">
-      <!-- <Files  /> -->
-      <!-- <SharedFiles /> -->
-      <!-- <Secrets /> -->
-      <!-- <SharedSecrets /> -->
-    
+    <VContent class="mx-16">
       <VMain>
-      <VFadeTransition>
         <RouterView />
-      </VFadeTransition>
-    </VMain>
-  </VContent>
+      </VMain>
+    </VContent>
+    <SideBar v-if="authenticated" />
   </VApp>
 </template>

@@ -39,10 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -75,13 +78,23 @@ WSGI_APPLICATION = 'fssp_django.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'fssp',
+        'USER': 'fssp_user',
+        'PASSWORD': 'fssp_passme+.',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -123,3 +136,43 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:8080',
+    'http://localhost:8080',
+]
+
+
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Azure Identity for the Azure Key Vault access from the json file
+
+## Init variables
+AZURE_TENANT_ID = ''
+AZURE_CLIENT_ID = ''
+AZURE_CLIENT_SECRET = ''
+AZURE_KEYVAULT_NAME = ''
+
+import json
+## Load the Azure Identity from the json file
+with open('azure-identity.json') as f:
+    data = json.load(f)
+    AZURE_KEYVAULT_NAME = data['keyVaultName']
+    AZURE_TENANT_ID = data['tenantId']
+    AZURE_CLIENT_ID = data['clientId']
+    AZURE_CLIENT_SECRET = data['clientSecret']
+
+# Azure Key Vault URL
+AZURE_KEYVAULT_URL = f"https://{AZURE_KEYVAULT_NAME}.vault.azure.net/"
+
+# Import libraries
+from azure.identity import ClientSecretCredential
+from azure.keyvault.secrets import SecretClient
+
+# Create a secret client
+credential = ClientSecretCredential( AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET)
+client = SecretClient(vault_url=AZURE_KEYVAULT_URL, credential=credential)
+
+
+
