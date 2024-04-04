@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: vuejs-service
+spec:
+  selector:
+    app: vuejs
+  ports:
+    - protocol: TCP
+      name: http
+      port: 80
+      targetPort: 80
+      nodePort: 30080
+  type: NodePort
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vuejs-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vuejs
+  template:
+    metadata:
+      labels:
+        app: vuejs
+    spec:
+      containers:
+      - name: vuejs
+        image: elyass359/fssp-vue:v2.5
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+        - name: VUE_APP_DJANGO_API_SERVER_URL
+          value: "http://django-api.default.svc.cluster.local:8000/api/"

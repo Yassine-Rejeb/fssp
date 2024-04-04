@@ -1,0 +1,97 @@
+# Secret for azure secretvault params
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azure-secret
+type: Opaque
+data:
+  AZURE_TENANT_ID: ODczNjk0NDgtNzZlYS00YzYyLWE0M2EtMWZjNmRiMjIwYjA0
+  AZURE_CLIENT_ID: MTU0MzQzZDktN2FjYS00NmE2LTg1OTYtOWQ0YTZlMDlkYTlm
+  AZURE_CLIENT_SECRET: RmlTOFF+ZFhmVnFRWTd0S0dQY3NCX3N3OGRiSS1oWFZhQ0twQ2J6Tw==
+  AZURE_KEYVAULT_NAME: ZnNzcC1rZXlwYWlycw==
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: django
+  template:
+    metadata:
+      labels:
+        app: django
+    spec:
+      containers:
+      - name: django
+        image: elyass359/fssp-django:v2.8
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: profile-pics
+          mountPath: /app/profilePics
+        env:
+        - name: POSTGRES_DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: POSTGRES_DB
+        - name: POSTGRES_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: POSTGRES_USER
+        - name: POSTGRES_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB_HOST
+          value: postgres
+        - name: AZURE_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-secret
+              key: AZURE_TENANT_ID
+        - name: AZURE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-secret
+              key: AZURE_CLIENT_ID
+        - name: AZURE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: azure-secret
+              key: AZURE_CLIENT_SECRET
+        - name: AZURE_KEYVAULT_NAME
+          valueFrom:
+            secretKeyRef:
+              name: azure-secret
+              key: AZURE_KEYVAULT_NAME
+        - name: FRONTEND_SERVICE_URL
+          value: "http://django-api.default:30080"
+        - name: ALLOWED_HOSTS
+          value: "*"
+        - name: DEBUG
+          value: "True"
+      volumes:
+      - name: profile-pics
+        hostPath:
+          path: /home/vagrant/fssp/django/profilePics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-api
+spec:
+  selector:
+    app: django
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+      nodePort: 30800
+  type: NodePort
