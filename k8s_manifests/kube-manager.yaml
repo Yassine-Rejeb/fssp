@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: manager-service-account
+  namespace: default
+automountServiceAccountToken: true
+
+---
+apiVersion: v1
+kind: Secret
+type : kubernetes.io/service-account-token
+metadata:
+  name: manager-service-account-token
+  annotations: 
+    kubernetes.io/service-account.name: manager-service-account
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: manager-rbac
+  namespace: default
+rules:
+# Allow the service account to create and manage Volumes , and mount them to the pods of the deployment 'django-deployment'
+- apiGroups: [""]
+  resources: ["persistentvolumes", "persistentvolumeclaims"]
+  verbs: ["create", "delete", "get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods/exec", "pods"]
+  verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["svc"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: manager-role-binding
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: manager-service-account
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: manager-rbac
+
+---
+# Deployment for kube manager
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kube-manager
+  template:
+    metadata:
+      labels:
+        app: kube-manager
+    spec:
+      serviceAccountName: manager-service-account  # specify the service account
+      automountServiceAccountToken: true  # automatically mount the service account token
+      containers:
+      - name: kube-manager
+        image: elyass359/fssp_kube_manager:v1.3
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 1999
+
+---
+# Service for kube manager
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-manager
+spec:
+  selector:
+    app: kube-manager
+  ports:
+    - protocol: TCP
+      port: 1999
+      targetPort: 1999
+      nodePort: 31999
+  type: NodePort
