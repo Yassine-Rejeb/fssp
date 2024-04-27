@@ -1,9 +1,13 @@
 <script>
 //import profileImage from '@/assets/images/profile.png';
 import store from '@/store';
+import axios from 'axios';
+import { ref } from 'vue';
+
+let DJANGO_API_URL = store.state.DJANGO_API_URL;
 
 const baseLinks = [
-{ text: 'Notifications', route: '/notifications', icon: 'mdi-bell' },
+{ text: 'Notifications', route: '/notifications' , icon: 'mdi-bell-ring'},
 { text: 'Account Settings', route: '/account', icon: 'mdi-account' },
 ];
 
@@ -29,20 +33,38 @@ export default {
       baseLinks,
       fileLinks,
       secretLinks,
-      //profileImage: profileImage,
+      base: ref("#c2e2fc"),
     };
   },
   watch: {
     '$vuetify.application.left'() {
       this.drawerIsExtended = this.$vuetify.application.left >= 200;
-      console.log("Nav Headings appear:",this.drawerIsExtended);
+      },
+  },
+  methods: {
+    getNotificationColor() {
+      let resp = axios.get(DJANGO_API_URL + "get_notifications", {withCredentials: true,})
+        .then((response) => {
+          if (response.data.count ) {
+            this.base = "warning";
+          }
+          else {
+            this.base = "#c2e2fc";
+          }
+        }).catch((error) => {
+          console.log(error);
+        });
+        // return resp;
     },
   },
+  mounted() {
+    setInterval(this.getNotificationColor, 1000);
+  },
+    
 };
 </script>
 
 <script setup>
-let DJANGO_API_URL = "http://127.0.0.1:8000/api/";
 import { ref , computed } from "vue";
 import { useTheme } from "vuetify";
 
@@ -85,17 +107,14 @@ axios.get(DJANGO_API_URL + "get_profile_pic", {withCredentials: true,})
   .then((response) => {
     let arr = response.data
     profileImage.value = "data:image/png;base64,"+arr; 
-    console.log(profileImage.value);
   })
   .catch((error) => {
     console.log(error);
   });
 
-
 </script>
 
 <template>
-    <!--  -->
     <VNavigationDrawer 
     expand-on-hover
     rail
@@ -105,43 +124,49 @@ axios.get(DJANGO_API_URL + "get_profile_pic", {withCredentials: true,})
     @mouseleave="drawerIsExtended=false"
     class="elevation-13"
     >
+    <!-- Profile Pic, Name & Email -->
     <VList>
         <VListItem
           :prepend-avatar="profileImage"
-          :title="user.fullname"
+          :title="user.fullname + ' ( ' + user.username + ' )'"
           :subtitle="user.email"
         ></VListItem>
     </VList>
 
     <VDivider></VDivider>
 
+    <!-- Nav Links: Notifications, Account Settings -->
     <VList density="compact" nav>
         <VListItem
-            v-for="link in baseLinks"
-            :key="link.text"
-            :prepend-icon="link.icon"
-            :title="link.text"
-            :value="link.text"
-            :to="link.route"
-            >
+          :prepend-icon="baseLinks[0].icon"
+          :title="baseLinks[0].text"
+          :value="baseLinks[0].text"
+          :to="baseLinks[0].route"
+          :class="{ 'custom-color': base === 'warning' }" >
         </VListItem>
-    <!-- </VList> -->
+
+        <VListItem
+          :prepend-icon="baseLinks[1].icon"
+          :title="baseLinks[1].text"
+          :value="baseLinks[1].text"
+          :to="baseLinks[1].route">
+        </VListItem>
 
     <v-divider></v-divider>
 
     <template v-if="drawerIsExtended" >
       <p class="sidebar-heading">File Management</p>
     </template>
-    <!-- <VList density="compact" nav> -->
-        <VListItem
-            v-for="link in fileLinks"
-            :key="link.text"
-            :prepend-icon="link.icon"
-            :title="link.text"
-            :value="link.text"
-            :to="link.route">
-        </VListItem>
-    <!-- </VList> -->
+
+    <!-- Nav Links: File Management -->
+    <VListItem
+        v-for="link in fileLinks"
+        :key="link.text"
+        :prepend-icon="link.icon"
+        :title="link.text"
+        :value="link.text"
+        :to="link.route">
+    </VListItem>
 
     <v-divider></v-divider>
 
@@ -150,41 +175,39 @@ axios.get(DJANGO_API_URL + "get_profile_pic", {withCredentials: true,})
           <p class="sidebar-heading" >Secret Management</p>
     </template>
 
-
-    <!-- <VList density="compact" nav> -->
-        <VListItem
-            v-for="link in secretLinks"
-            :key="link.text"
-            :prepend-icon="link.icon"
-            :title="link.text"
-            :value="link.text"
-            :to="link.route"
-            >
-        </VListItem>
-    <!-- </VList> -->
-
-    <v-divider></v-divider>
-
-    <!-- <VList density="compact" nav > -->
-        <VListItem  @click="changeTheme"
-                    :prepend-icon="darkTheme ? 'mdi-weather-sunny' : 'mdi-weather-night'"
-                    :title="'Switch Theme'"
-                    >
-        </VListItem>
-    <!-- </VList> -->
-    <v-divider></v-divider>
-
-    <!-- <VList density="compact" nav> -->
-        <VListItem
-            key="Logout"
-            prepend-icon="mdi-logout"
-            title="Logout"
-            value="Logout"
-            to="/Logout"
+    <!-- Nav Links: Secret Management -->
+    <VListItem
+        v-for="link in secretLinks"
+        :key="link.text"
+        :prepend-icon="link.icon"
+        :title="link.text"
+        :value="link.text"
+        :to="link.route"
         >
-        </VListItem>
+    </VListItem>
+
+    <v-divider></v-divider>
+
+    <!-- Nav Links: Theme Switch -->
+    <VListItem  @click="changeTheme"
+                :prepend-icon="darkTheme ? 'mdi-weather-sunny' : 'mdi-weather-night'"
+                :title="'Switch Theme'"
+                >
+    </VListItem>
+
+    <v-divider></v-divider>
+
+    <!-- Nav Links: Logout -->
+    <VListItem
+        key="Logout"
+        prepend-icon="mdi-logout"
+        title="Logout"
+        value="Logout"
+        to="/Logout"
+    >
+    </VListItem>
+
     </VList>
-    <p>{{ authenticated.value }}</p>
     </VNavigationDrawer>
 </template>
 
@@ -197,5 +220,11 @@ axios.get(DJANGO_API_URL + "get_profile_pic", {withCredentials: true,})
   padding: 10px;
   margin: 0;
   white-space: nowrap;
+}
+</style>
+
+<style scoped>
+.custom-color  {
+  color: #ffeb3b; /* This is the color for 'warning' in Vuetify */
 }
 </style>

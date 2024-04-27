@@ -1,8 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import axios from 'axios';
-
-const DJANGO_API_URL = "http://127.0.0.1:8000/api/";
-
 import Login from '../components/Login.vue';
 import Register from '../components/Register.vue';
 import Files from '../components/Files.vue';
@@ -17,7 +14,9 @@ import NewFile from '../components/NewFile.vue';
 import NewSecret from '../components/NewSecret.vue';
 import VerifyEmail from '../components/VerifyEmail.vue';
 import ChangeUnverifiedEmail from '../components/ChangeUnverifiedEmail.vue';
+import AccountSettings from '../components/AccountSettings.vue';
 import store from '@/store'
+let DJANGO_API_URL = store.state.DJANGO_API_URL;
 //import Account from '../components/Account.vue';
 
 const routes = [
@@ -25,6 +24,7 @@ const routes = [
   { path: '/login', component: Login, meta: { requiresGuest: true }, props: (route) => ({ isAuthenticated: checkIfAuthenticated() }) },
   { path: '/change_unverified_email', name: 'change-unverified-email', component: ChangeUnverifiedEmail, meta: { requiresGuest: true }, },
   { path: '/notifications', component: Notifications , meta: { requiresAuth: true }, props: (route) => ({ isAuthenticated: checkIfAuthenticated() }) },
+  { path: '/account', component: AccountSettings , meta: { requiresAuth: true }, props: (route) => ({ isAuthenticated: checkIfAuthenticated() }) },
   { path: '/logout', component: Logout, meta: { requiresAuth: true }, },
   //  { path: '/account', component: Account},
   { path: '/files/new', component: NewFile , meta: { requiresAuth: true }, }, 
@@ -58,7 +58,7 @@ async function checkIfAuthenticated() {
 
 router.beforeEach(async (to, from, next) => {
   const isAuthenticated = await checkIfAuthenticated();
-  console.log("User isAuthenticated:", isAuthenticated);
+  // console.log("User isAuthenticated:", isAuthenticated);
   if (to.meta.requiresAuth && !isAuthenticated) {
     // Redirect to login if trying to access an authenticated route without login
     next('/login');

@@ -7,11 +7,12 @@ class userAccount(models.Model):
     fullname = models.CharField(max_length=50)
     email = models.CharField(max_length=50)
     password = models.CharField(max_length=512)
-    profilePic = models.ImageField(upload_to='profilePics/', default='profilePics/default.jpg')
+    profilePic = models.ImageField(upload_to='./profilePics/', default='profilePics/default.jpg')
     accountCreationTime = models.DateTimeField(default=timezone.now)
     status2FA = models.BooleanField()
     criticalLockStat = models.BooleanField()
-    idleTime = models.IntegerField()
+    idleTimer = models.IntegerField()
+    sessionTimer = models.IntegerField(default=30)
     verified = models.BooleanField(default=False)
     forgotPasswordKey = models.CharField(max_length=6, default="")
     forgotPasswordTimestamp = models.DateTimeField(default=timezone.now)
@@ -19,49 +20,6 @@ class userAccount(models.Model):
     def __str__(self):
         return self.username
     
-    def getFullname(self):
-        return self.fullname
-    
-    def getEmail(self):
-        return self.email
-    
-    def getPassword(self):
-        return self.password
-    
-    def getProfilePic(self):
-        return self.profilePic
-    
-    def getStatus2FA(self):
-        return self.status2FA
-    
-    def getCriticalLockStat(self):
-        return self.criticalLockStat
-    
-    def getIdleTime(self):
-        return self.idleTime
-    
-    def setFullname(self, fullname):
-        self.fullname = fullname
-    
-    def setEmail(self, email):
-        self.email = email
-
-    def setPassword(self, password):
-        import hashlib
-        self.password = hashlib.sha512(password.encode()).hexdigest()
-    
-    def setProfilePic(self, profilePic):
-        self.profilePic = profilePic
-    
-    def setStatus2FA(self, status2FA):
-        self.status2FA = status2FA
-
-    def setCriticalLockStat(self, criticalLockStat):
-        self.criticalLockStat = criticalLockStat
-    
-    def setIdleTime(self, idleTime):
-        self.idleTime = idleTime
-
     class Meta:
         db_table = "userAccount"
         ordering = ['fullname']
@@ -94,7 +52,7 @@ class object(models.Model):
     owner = models.ForeignKey(userAccount, on_delete=models.CASCADE)
     dateTimeCreated = models.DateTimeField()
     # AES Key encrypted with RSA public key
-    #AESKey = models.CharField(max_length=512)
+    AESKey = models.CharField(max_length=512)
     
     class Meta:
         db_table = "object"
@@ -103,7 +61,8 @@ class object(models.Model):
 class secret(object):
     secretID = models.AutoField(primary_key=True)
     secretName = models.CharField(max_length=50, default="Untitled")
-    content = models.CharField(max_length=40976)
+    content = models.CharField(max_length=4097)
+    iv = models.CharField(max_length=1024)
 
     def __str__(self):
         return self.content
@@ -113,9 +72,11 @@ class secret(object):
 
 class file(object):
     fileID = models.AutoField(primary_key=True)
-    myFile = models.FileField(upload_to='files/')
+    podName = models.CharField(max_length=100, default="default")
     fileName = models.CharField(max_length=50)
-    size = models.IntegerField()
+    size = models.IntegerField(default=-1)
+    encSize = models.IntegerField(default=-1)
+    fileHash = models.CharField(max_length=33, default="")
     
     class Meta:
         db_table = "file"
@@ -133,54 +94,24 @@ class file(object):
 class notification(models.Model):
     user = models.ForeignKey(userAccount, on_delete=models.CASCADE)
     NotifID = models.AutoField(primary_key=True)
+    # owner = models.ForeignKey(userAccount, on_delete=models.CASCADE, related_name='owner', null=True)
     timestamp = models.DateTimeField()
-    operation = models.CharField(max_length=250)
-    object = models.ForeignKey(object, on_delete=models.CASCADE)    
-
-    def __str__(self):
-        return self.operation
-
-    def getUser(self):
-        return self.user
-
-    def getTimestamp(self):
-        return self.timestamp
-
-    def getOperation(self):
-        return self.operation
-
-    def getObject(self):
-        return self.object
+    operation = models.CharField(max_length=100)
+    objectType = models.CharField(max_length=6, default="object")
+    objectName = models.CharField(max_length=50, null=True)
+    # viewed = models.BooleanField(default=False)
 
     class Meta:
         db_table = "notification"
         ordering = ['timestamp']
 
-class activityLog(models.Model):
-    objID = models.AutoField(primary_key=True)
-    object = models.ForeignKey(object, on_delete=models.PROTECT)
-    user = models.ForeignKey(userAccount, on_delete=models.PROTECT)
-    timestamp = models.DateTimeField()
-    operation = models.CharField(max_length=250)
-
-    def __str__(self):
-        return self.operation
-
-    def getObject(self):
-        return self.object
-
-    def getUser(self):
-        return self.user
-
-    def getTimestamp(self):
-        return self.timestamp
-
-    def getOperation(self):
-        return self.operation
+class viewedNotifications(models.Model):
+    vNotID = models.AutoField(primary_key=True)
+    notification = models.ForeignKey(notification, on_delete=models.CASCADE)
+    user = models.ForeignKey(userAccount, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = "activityLog"
-        ordering = ['timestamp']
+        db_table = "viewedNotifications"
 
 class share(models.Model):
     shareID = models.AutoField(primary_key=True)
@@ -188,6 +119,8 @@ class share(models.Model):
     object = models.ForeignKey(object, on_delete=models.CASCADE)
     sharedWith = models.ForeignKey(userAccount, on_delete=models.CASCADE, related_name='sharedWith')
     shareDateTime = models.DateTimeField(default=timezone.now)
+    oneTimeShare = models.BooleanField(default=False)
+    shareValidity = models.IntegerField(default=0) 
 
     def __str__(self):
         return self.permission
@@ -209,10 +142,21 @@ class CustomTokenGenerator(PasswordResetTokenGenerator):
     def _make_hash_value(self, user, timestamp):
         return (
             str(user.pk) + str(timestamp) +
-            str(user.status2FA) + str(user.idleTime)
+            str(user.status2FA) + str(user.idleTimer)
         )
     
     def check_token(self, user, token):
         return super().check_token(user, token)
         
+class eventLog(models.Model):
+    eventID = models.AutoField(primary_key=True)
+    user = models.ForeignKey(userAccount, on_delete=models.CASCADE, null=True)
+    timestamp = models.DateTimeField()
+    operation = models.CharField(max_length=250)
+    object = models.ForeignKey(object, on_delete=models.CASCADE, null=True)
+    viewed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.operation
+
 

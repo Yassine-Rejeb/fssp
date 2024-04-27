@@ -15,13 +15,9 @@ store.watch(
     if (newVal) {
       authenticated.value = newVal
       showSideBar.value = true
-      // console.log('Authenticated value changed:', newVal, 'showSideBar:', showSideBar.value, 'authenticated:', authenticated.value);
     }
   }
 )
-// console.log("Authenticated:", authenticated.value, "showSideBar:", showSideBar.value);
-
-// store.dispatch("checkAuthentication");
 
 </script>
 
@@ -30,6 +26,9 @@ store.watch(
     <!-- <p> Authenticated: {{ authenticated }}</p> -->
     <!-- Side Bar -->
     <VContent class="mx-16">
+      <!-- <v-alert type="info" class="mt-5">
+        You are not authenticated. Please login to access the application.
+      </v-alert> -->
       <VMain>
         <RouterView />
       </VMain>

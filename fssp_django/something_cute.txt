@@ -1,0 +1,9 @@
+Just a test for hashes.
+Multiple lined test.
+Again,		with tabs.
+Multiple lined test.
+Again,		with tabs.
+Multiple lined test.
+Again,		with tabs.Multiple lined test.
+Again,		with tabs.
+

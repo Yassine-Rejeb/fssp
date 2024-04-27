@@ -37,13 +37,12 @@ class activityLogSerializer(serializers.ModelSerializer):
         model = activityLog
         fields = '__all__'
 
-# class sessionSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = session
-#         fields = '__all__'
-    
 class shareSerializer(serializers.ModelSerializer):
     class Meta:
         model = share
         fields = '__all__'
 
+class eventLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = eventLog
+        fields = '__all__'

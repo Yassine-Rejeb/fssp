@@ -28,6 +28,13 @@ spec:
       - name: django
         image: elyass359/fssp-django:v2.8
         imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
         ports:
         - containerPort: 8000
         volumeMounts:
@@ -71,7 +78,7 @@ spec:
             secretKeyRef:
               name: azure-secret
               key: AZURE_KEYVAULT_NAME
-        - name: FRONTEND_SERVICE_URL
+        - name: VUE_APP_DJANGO_API_SERVER_URL
           value: "http://django-api.default:30080"
         - name: ALLOWED_HOSTS
           value: "*"

@@ -1,9 +1,10 @@
 <script setup>
-let DJANGO_API_URL = "http://127.0.0.1:8000/api/";
 import { ref , computed } from "vue";
 import { useTheme } from "vuetify";
 import axios from "axios";
 import store from "../store";
+
+let DJANGO_API_URL = store.state.DJANGO_API_URL;
 
 // Data for V-Alert display
 let showAlert = ref(false);

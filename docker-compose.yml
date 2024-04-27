@@ -3,11 +3,14 @@ version: '3.1'
 services:
   django:
     hostname: drf.fssp.m0d4s.me
-    build:
-      context: fssp_django/
-      dockerfile: Dockerfile
+    image: elyass359/fssp-django:v1
+    # build:
+    #   context: fssp_django/
+    #   dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    volumes:
+      - ./profilePics:/app/profilePics:rw
     depends_on:
       - postgres
     networks:

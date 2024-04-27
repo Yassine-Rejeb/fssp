@@ -1,48 +1,131 @@
 <script>
+import axios from 'axios';
+import { ref, reactive } from 'vue';
+import store from '../store';
+
+let DJANGO_API_URL = store.state.DJANGO_API_URL;
+
 export default {
-    props: ['isAuthenticated'],
     data() {
         return {
-            headers: [
-                { text: 'Username', value: 'username' },
-                { text: 'Full Name', value: 'fullname' },
-                { text: 'Operation', value: 'operation' },
-                { text: 'Secret', value: 'secret' },
-                { text: 'Date & Time Of Operation', value: 'date'},
-            ],
-            items: [
-                { username: 'Alice123', fullname: "Alice Cooper" , operation: 'Shared with you a secret', secret: 'Secret A', date: '2021-09-01 12:00:00'},
-                { username: 'Bob', fullname: "Bob Smith", operation: 'Shared with you a secret', secret: 'Secret B', date: '2021-09-01 14:45:56'},
-                { username: 'David', fullname: "David O'Conner", operation: 'Revoked your access to his secret', secret: 'Secret D', date: '2021-09-01 15:00:00'},
-                { username: 'YOU', fullname: "YOU", operation: 'Created new secret', secret: 'Secret E', date: '2021-09-01 15:30:00'},
-                { username: 'YOU', fullname: "YOU", operation: 'Shared a secret with CharlieOxO', secret: 'Secret E', date: '2021-09-01 15:45:00'}, 
-                { username: 'Charlie', fullname: "Charlie Brown", operation: 'Displayed a secret you shared with him', secret: 'Secret F', date: '2021-09-01 16:00:00'},
-            ],
+            isLoading: ref(true),
+            data: reactive([{
+                id: '', user: 'USERNAME', operation: 'OPERATION', object_type: 'OBJECT TYPE', object_name: 'OBJECT NAME', date: '1970-01-01 00:00:00'}
+                ]),
+            search: '',
+            csrftoken: '',
         };
     },
-    methods: {
-        markAsRead(item) {
-            console.log(item);
-        }
+    computed: {
+        filteredItems() {
+            return this.data.filter(item =>
+            Object.values(item).some(val => 
+                typeof val === 'string' && val.toLowerCase().includes(this.search.toLowerCase())
+            )
+        );
+    }
     },
+    methods: {
+        async getCSRFToken() {
+            let resp = axios
+                .get(DJANGO_API_URL + "get_csrf_token", {withCredentials: true,})
+                .then((response) => {
+                    // console.log(response);
+                    return response.data.csrftoken;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+            return resp;
+        },
+        async markAsRead(id) {
+            let resp = await axios.get(DJANGO_API_URL + 'mark_notification_as_viewed', 
+            {withCredentials: true, params: 
+                {
+                    csrfToken: this.csrftoken,
+                    id: id,
+                }})
+            .then(response => {
+                // console.log(response);
+                if (response.data.message === 'Success') {
+                    console.log('Marked as read');
+                    this.updateNotifications();
+                }
+                else {
+                    console.log(response.data.message);
+                }
+            }).catch(error => {
+                console.log(error);
+            });
+            return resp;
+        },
+        async updateNotifications() {
+            await axios.get(DJANGO_API_URL + 'get_notifications', 
+            {withCredentials: true}).then(response => {
+                // console.log(response);
+                if (response.data.message === 'Success') {
+                    this.data = response.data.data;
+                    this.isLoading = false;
+                }
+                else {
+                    // console.log(response.data.message);
+                }
+            }).catch(error => {
+                console.log(error);
+            });
+        },
+        searchItems() {
+        // No action needed here as the computed property handles filtering
+        }
+  },
+    async mounted() {
+        this.csrftoken = await this.getCSRFToken();
+        await axios.get(DJANGO_API_URL + 'get_notifications', 
+        {withCredentials: true}).then(response => {
+            // console.log(response);
+            if (response.data.message === 'Success') {
+                this.data = response.data.data;
+                // console.log(this.data);
+                this.isLoading = false;
+                // this.updateNotifications();
+            }
+            else {
+                // console.log(response.data.message);
+            }
+        }).catch(error => {
+            console.log(error);
+        });
+  }
 };
 </script>
 
 <template>
-<v-data-table :headers="headers" :items="items" class="elevation-5 my-5" :header-props="{ sticky: true }">
-    <template #item="{ item }">
+  <div>
+    <v-text-field class="md-5 mt-5 elevation-2" v-model="search" label="Search" @input="searchItems" />
+    <v-overlay :model-value="isLoading" class="align-center justify-center">
+        <v-progress-circular
+            v-if="isLoading"
+            indeterminate
+            color="primary"
+        ></v-progress-circular>
+      </v-overlay>
+    <v-data-table v-if="!isLoading" :items="filteredItems" class="elevation-1">
+      
+      <template #item="{ item }">
         <tr>
-            <td>{{ item.username }}</td>
-            <td>{{ item.fullname }}</td>
-            <td>{{ item.operation }}</td>
-            <td>{{ item.secret }}</td>
-            <td>{{ item.date }}</td>
-            <td>
-                <v-btn color="primary" @click="markAsRead(item)">
-                    <v-icon>mdi-check</v-icon> Mark As Read
-                </v-btn>
-            </td>
+          <td>{{ item.id }}</td>
+          <td>{{ item.user }}</td>
+          <td>{{ item.operation }}</td>
+          <td>{{ item.object_type }}</td>
+          <td>{{ item.object_name }}</td>
+          <td>{{ item.date }}</td>
+          <td style="" >
+            <v-btn color="primary" @click="markAsRead(item.id)" style="float: right">
+              <v-icon>mdi-eye</v-icon></v-btn>
+          </td>
         </tr>
-    </template>
-</v-data-table>
+      </template>
+    </v-data-table>
+  </div>
 </template>
+

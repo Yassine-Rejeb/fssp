@@ -6,7 +6,9 @@ import { ref } from 'vue';
 let alertContent = ref("Verifying email... Please wait.");
 let alertType = ref("info");
 
-const DJANGO_API_URL = 'http://127.0.0.1:8000/api'; // replace with your actual API URL
+import store from '../store';
+
+let DJANGO_API_URL = store.state.DJANGO_API_URL;
 
 async function verifyEmail() {
   try {
@@ -15,8 +17,8 @@ async function verifyEmail() {
     const uidb64 = router.params.uidb64;
     const token = router.params.token;
 
-    const response = await axios.get(DJANGO_API_URL + '/verifyEmail' + '/' + uidb64 + '/' + token);
-    console.log(response.data.message);
+    const response = await axios.get(DJANGO_API_URL + 'verifyEmail' + '/' + uidb64 + '/' + token);
+    // console.log(response.data.message);
     // Assuming the backend returns a success message upon successful verification
     if (response.data.message === 'Email verified successfully') {
         console.log('Email verified successfully!');

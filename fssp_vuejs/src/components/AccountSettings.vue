@@ -1,6 +1,8 @@
 <script>
-let DJANGO_API_URL = 'http://127.0.0.1:8000/api/';
 import axios from 'axios';
+import store from '../store';
+
+let DJANGO_API_URL = store.state.DJANGO_API_URL;
 
 export default {
   data() {
@@ -42,14 +44,16 @@ export default {
     async ChangePass() {
         let resp = axios.post(DJANGO_API_URL + 'change_password', 
         {
-            csrfToken: await this.getCSRFToken(),
             currentPassword: this.currentPassword,
             newPassword: this.newPassword,
             confirmPassword: this.confirmPassword,
-        }, {withCredentials: true})
+        }, {withCredentials: true, headers: {'X-CSRFToken': await this.getCSRFToken()}
+        })
         .then(response => {
-            console.log(response);
-            if (response.data.message === 'Success') {
+            if (response.status === 403) {
+                window.location.href = '/login';
+            }
+            if (response.data.message === 'Password changed successfully') {
                 // Alert Success
                 this.alertType = 'success';
                 this.alertContent = 'Password changed successfully';
@@ -66,13 +70,74 @@ export default {
       });
         return resp;
     },
-    changePic() {
-      let resp;
-    },
-    saveSession() {
-      if (this.$refs.form_timers.validate()) {
-        console.log('Session timers saved');
+    async changePic() {
+      // Check if there is a file in the profilePic variable
+      // console.log("OKAY:",this.profilePic);
+      if (this.profilePic === null) {
+          this.alertType = 'error';
+          this.alertContent = 'Profile Picture is required';
+          this.showAlert = true;
+          return;
       }
+      const formData = new FormData();
+      formData.append('profilePic', this.profilePic[0]);
+      // console.log(typeof(this.profilePic));
+      let resp = axios.post(DJANGO_API_URL + 'change_profile_pic', 
+      formData,
+      { 
+        withCredentials: true,
+        headers: {'X-CSRFToken': await this.getCSRFToken(), 'Content-Type': 'multipart/form-data'}
+      }).then(response => {
+          console.log(response.status);
+          if (response.status === 403) {
+              window.location.href = '/login';
+          }
+          if (response.data.message === 'Profile picture changed successfully') {
+              // Alert Success
+              this.alertType = 'success';
+              this.alertContent = 'Profile picture changed successfully';
+              this.showAlert = true;
+          }
+          else {
+              console.log(response.data.message);
+              this.alertType = 'error';
+              this.alertContent = response.data.message;
+              this.showAlert = true;
+          }
+      }, error => {
+        console.log(error);
+      });
+      return resp;
+    },
+    async saveSession() {
+      let resp = axios.post(DJANGO_API_URL + 'edit_session_timeout', 
+      {expiry: this.sessionTimer},
+      {
+        withCredentials: true, 
+        headers: {'X-CSRFToken': await this.getCSRFToken()}
+      })
+      .then(response => {
+          console.log(response);
+          // If the response is 403 Forbidden, reroute to /login
+          if (response.status === 403) {
+              window.location.href = '/login';
+          }
+          if (response.data.message === 'Success') {
+              // Alert Success
+              this.alertType = 'success';
+              this.alertContent = 'Session timer saved successfully';
+              this.showAlert = true;
+          }
+          else {
+              console.log(response.data.message);
+              this.alertType = 'error';
+              this.alertContent = response.data.message;
+              this.showAlert = true;
+          }
+      }, error => {
+        console.log(error);
+      });
+      return resp;
     },
   },
 };
@@ -128,6 +193,7 @@ export default {
                     v-model="profilePic"
                     label="Profile Picture"
                     accept="image/*"
+                    type="file"
                     :rules="profilePicRules"
                 ></v-file-input>
 
@@ -140,7 +206,7 @@ export default {
         <v-form ref="form_timers" v-model="valid" lazy-validation>
             <h3 class="mb-5" >Update Timers</h3>
             <div class="slider-container" style="display: flex; flex-direction: column; align-items: center;">
-                <v-slider
+                <!-- <v-slider
                     class="w-100"
                     v-model="idleTimer"
                     label="Idle Timer (minutes)"
@@ -148,7 +214,7 @@ export default {
                     max="360"
                     step="5"
                     thumb-label
-                ></v-slider>
+                ></v-slider> -->
                 <v-slider
                     class="w-100"
                     v-model="sessionTimer"
@@ -158,7 +224,7 @@ export default {
                     step="5"
                     thumb-label
                 ></v-slider>
-                <v-btn color="primary" @click="saveTimers">Save Timers</v-btn>
+                <v-btn color="primary" @click="saveSession">Save Session</v-btn>
             </div>
         </v-form>
       </v-card-text>

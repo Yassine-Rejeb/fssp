@@ -1,5 +1,4 @@
 <script setup>
-let DJANGO_API_URL = "http://127.0.0.1:8000/api/";
 import { ref , computed } from "vue";
 import { useTheme } from "vuetify";
 import axios from "axios";
@@ -8,7 +7,26 @@ import store from "../store";
 let showAlert = ref(false);
 let alertContent = ref("");
 
-function sendLoginData() {
+let DJANGO_API_URL = store.state.DJANGO_API_URL;
+
+console.log("DJANGO_API_URL:", DJANGO_API_URL);
+
+async function getCSRFToken() {
+  try {
+    const response = await axios.get(DJANGO_API_URL + "gen_csrf_token", {withCredentials: true,})
+    .then((response) => {
+      // console.log("CSRF Token:", response.data.csrf_token);
+      return response.data;
+    }).catch((error) => {
+      console.log(error);
+    });
+    return response;
+  } catch (error) {
+    console.error("Error fetching CSRF token:", error);
+  }
+}
+
+async function sendLoginData() {
   let data = new FormData();
   data.append("email", form.value.email);
   data.append("password", form.value.password);
@@ -18,7 +36,11 @@ function sendLoginData() {
       console.log(response);
       if (response.data.message === "login successful" || response.data.message === "Already logged in") {
         console.log("Logged in");
-        window.location.href = "/notifications";
+        getCSRFToken().then(() => {
+          window.location.href = "/notifications";
+          // alert("Logged in");
+        });
+
       } else if (response.data.message === "Credentials do not match") {
         console.log("Invalid Credentials");
         alertContent.value = "Invalid Credentials";
