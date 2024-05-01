@@ -63,12 +63,19 @@ spec:
       labels:
         app: kube-manager
     spec:
-      serviceAccountName: manager-service-account  # specify the service account
-      automountServiceAccountToken: true  # automatically mount the service account token
+      serviceAccountName: manager-service-account
+      automountServiceAccountToken: true
       containers:
       - name: kube-manager
         image: elyass359/fssp_kube_manager:v1.3
         imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
+          limits:
+            cpu: "300m"
+            memory: "300Mi"
         ports:
         - containerPort: 1999
 

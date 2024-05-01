@@ -32,6 +32,13 @@ spec:
       - name: vuejs
         image: elyass359/fssp-vue:v2.7
         imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
+          limits:
+            cpu: "200m"
+            memory: "200Mi"
         ports:
         - containerPort: 80
         env:

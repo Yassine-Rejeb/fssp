@@ -9,8 +9,6 @@ kubeManager = km()
 
 @app.route('/')
 def hello():
-    # if len(kubeManager.list_pods()) == 0:
-    #     kubeManager.create_pod()
     return jsonify({'message': 'Welcome to Kubernetes manager for FSSP'}), 200
 
 @app.route('/upload_file', methods=['POST'])

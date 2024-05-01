@@ -84,6 +84,8 @@ spec:
           value: "*"
         - name: DEBUG
           value: "True"
+        - name: AZURE_MANAGED_IDENTITY
+          value: "False"
       volumes:
       - name: profile-pics
         hostPath:

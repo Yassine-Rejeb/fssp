@@ -185,7 +185,7 @@ def sendVerificationEmail(user, email):
 
         # Create a unique link for verification
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-        url= os.environ.get('VUE_APP_DJANGO_API_SERVER_URL', 'https://django-api.default:30800/')
+        url= os.environ.get('VUE_APP_DJANGO_API_SERVER_URL', 'http://django-api.default:30080/')
         verification_link = f'{url}verify-email/{uidb64}/{token}/'
 
         # Save the verification link to the database
