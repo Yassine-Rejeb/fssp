@@ -1,0 +1,117 @@
+# Django Gateway
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: django-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 443
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+# Django VirtualService
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: django-virtual-service
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - django-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /api/
+    route:
+    - destination:
+        host: django-api
+        port:
+          number: 8000
+  - match:
+    - uri:
+        prefix: /admin/
+    route:
+    - destination:
+        host: django-api
+        port:
+          number: 8000
+
+---
+# Vue Gateway
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: vue-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+# Vue VirtualService
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: vue-virtual-service
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - vue-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: vuejs-service
+        port:
+          number: 80
+
+---
+# PGAdmin Gateway
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: pgadmin-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 8081
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+# PGAdmin VirtualService
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: pgadmin-virtual-service
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - pgadmin-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: pgadmin-service
+        port:
+          number: 8081
