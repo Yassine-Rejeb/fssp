@@ -156,7 +156,7 @@ class KubeManager:
         except Exception as e:
             print(f'Failed to execute command in pod {pod_name}: {e}')
                 
-        print(f'file_hash: {file_hash}',"\n",f' hashed: {hashed}')
+        # print(f'file_hash: {file_hash}',"\n",f' hashed: {hashed}')
         return True
         # if file_hash != hashed:
         #     # Delete the file

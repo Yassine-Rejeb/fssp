@@ -33,11 +33,11 @@ def upload_file():
         pv_pod = kubeManager.select_pv_pod(pods=kubeManager.list_pods(), file_size=size)
 
     # Check params before calling the upload_file method
-    print(f'filename: {filename}, username: {username}, original_hash: {original_hash}, size: {size}, pv_pod: {pv_pod}')
+    # print(f'filename: {filename}, username: {username}, original_hash: {original_hash}, size: {size}, pv_pod: {pv_pod}')
     
     # Upload the file to the selected PV
     result = kubeManager.upload_file(f, filename, username, pv_pod, original_hash)
-    print('result:', result)
+    # print('result:', result)
     # Check if the file was uploaded successfully
     if result:
         return jsonify({'message': 'File uploaded successfully', 'podname': kubeManager.get_pod_name(filename=filename , username=username, namespace='default' )}), 200
@@ -50,7 +50,7 @@ def get_file():
     filename = request.args.get('filename')
     username = request.args.get('owner')
     PodName = request.args.get('pod_name')
-    print(f'filename: {filename}, username: {username}, pod_name: {PodName}')
+    # print(f'filename: {filename}, username: {username}, pod_name: {PodName}')
 
     # Check if the file exists
     file_exists = kubeManager.file_exists(filename, username, PodName)
@@ -74,7 +74,7 @@ def delete_file():
     filename = data.get('filename')
     username = data.get('owner')
     PodName = data.get('pod_name')
-    print(f'filename: {filename}, username: {username}, pod_name: {PodName}')
+    # print(f'filename: {filename}, username: {username}, pod_name: {PodName}')
 
     # Check if the file exists
     pre_delete_check = kubeManager.file_exists(filename, username, PodName)
