@@ -19,14 +19,13 @@ COPY . .
 # RUN python manage.py collectstatic --noinput
 
 # Run migrations
-# RUN python manage.py makemigrations
-# RUN python manage.py migrate
+RUN python3 manage.py makemigrations
 
 # Expose port
 EXPOSE 8000
 
 # Command to run the Django server
-ENTRYPOINT ["python", "manage.py"]
-CMD ["runserver_plus", "0.0.0.0:8000", "--cert", "./ssl/server.crt", "--key", "./ssl/server.key"] 
+CMD ["sh", "-c", "python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000"]
+# CMD ["runserver_plus", "0.0.0.0:8000", "--cert", "./ssl/server.crt", "--key", "./ssl/server.key"] 
 # CMD ["/bin/sh" "-c" "[\"/bin/python\", \"manage.py\", \"runserver_plus\", \"0.0.0.0:8000\", \"--cert\", \".\\ssl\\server.crt\", \"--key\", \".\\ssl\\server.key\"]"]
 # ENTRYPOINT ["/bin/usr/python manage.py runserver_plus 0.0.0.0:8000 --cert ./ssl/server.crt --key ./ssl/server.key"]

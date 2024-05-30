@@ -190,14 +190,17 @@ AZURE_MANAGED_IDENTITY = os.environ.get('AZURE_MANAGED_IDENTITY', 'False')
 # Azure Key Vault URL
 AZURE_KEYVAULT_URL = f"https://{AZURE_KEYVAULT_NAME}.vault.azure.net/"
 
-if AZURE_MANAGED_IDENTITY == 'False':
-    # Import libraries
-    from azure.identity import ClientSecretCredential
-    from azure.keyvault.secrets import SecretClient
+client = None
 
-    # Create a secret client
-    credential = ClientSecretCredential( AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET)
-    client = SecretClient(vault_url=AZURE_KEYVAULT_URL, credential=credential)
+if AZURE_MANAGED_IDENTITY == 'False':
+    pass
+    # # Import libraries
+    # from azure.identity import ClientSecretCredential
+    # from azure.keyvault.secrets import SecretClient
+
+    # # Create a secret client
+    # credential = ClientSecretCredential( AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET)
+    # client = SecretClient(vault_url=AZURE_KEYVAULT_URL, credential=credential)
 # Another way to connect to the Azure Key Vault is when the app is hosted in Azure
 elif AZURE_MANAGED_IDENTITY == 'True':
     # Import libraries

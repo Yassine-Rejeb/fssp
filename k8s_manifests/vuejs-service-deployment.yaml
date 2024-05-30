@@ -11,7 +11,7 @@ spec:
       port: 80
       targetPort: 80
       nodePort: 30080
-  type: NodePort
+  type: LoadBalancer
 
 ---
 apiVersion: apps/v1
@@ -43,7 +43,7 @@ spec:
         - containerPort: 80
         env:
         - name: VUE_APP_DJANGO_API_SERVER_URL
-          value: "http://django-api.default.svc.cluster.local:8000/api/"
+          value: "https://api.m0d4s.me/api/"
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler

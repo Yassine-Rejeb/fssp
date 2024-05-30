@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
       - name: django
-        image: elyass359/fssp-django:v2.8
+        image: elyass359/fssp-django:v3.2
         imagePullPolicy: Always
         resources:
           requests:
@@ -79,7 +79,7 @@ spec:
               name: azure-secret
               key: AZURE_KEYVAULT_NAME
         - name: VUE_APP_DJANGO_API_SERVER_URL
-          value: "http://django-api.default:30080"
+          value: "https://fssp.m0d4s.me"
         - name: ALLOWED_HOSTS
           value: "*"
         - name: DEBUG

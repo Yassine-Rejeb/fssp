@@ -186,7 +186,10 @@ def sendVerificationEmail(user, email):
         # Create a unique link for verification
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         url= os.environ.get('VUE_APP_DJANGO_API_SERVER_URL', 'http://django-api.default:30080/')
-        verification_link = f'{url}verify-email/{uidb64}/{token}/'
+        verification_link = f'{url}/verify-email/{uidb64}/{token}/'
+
+        # Check for successive slashes : // in the URL
+        verification_link = re.sub(r'(?<!:)//', '/', verification_link)
 
         # Save the verification link to the database
         emailVerification.objects.create(user=user, timestamp=timezone.now(), token=token, uid=uidb64)
@@ -396,13 +399,7 @@ def changeUnverifiedEmail(request):
         user.save()
 
         # Remove the previous verification email object from the database if it exists
-        try:
-            emailVerification.objects.get(user=userAccount.objects.get(email=currntEmail)).delete()
-        except emailVerification.DoesNotExist:
-            return JsonResponse({"message": "An error occurred while processing your data"})
-            
-        if emailVerification.objects.filter(user=userAccount.objects.get(email=currntEmail)).exists():
-            emailVerification.objects.get(user=userAccount.objects.get(email=currntEmail)).delete()
+        emailVerification.objects.get(user=userAccount.objects.get(email=newEmail)).delete()
 
         # Send the verification email
         sendVerificationEmail(user, newEmail)

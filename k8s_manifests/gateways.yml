@@ -1,44 +1,56 @@
-# Django Gateway
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: django-gateway
+  namespace: default
 spec:
   selector:
-    istio: ingressgateway
+    istio: aks-istio-ingressgateway-external
   servers:
   - port:
-      number: 443
+      number: 80
       name: http
       protocol: HTTP
     hosts:
-    - "*"
+    - "*" # This is a wildcard host, NEEDS TO BE CHANGED
+    # tls:
+    #   httpsRedirect: true
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    hosts:
+    - "api.m0d4s.me"
+    tls:
+      mode: SIMPLE
+      credentialName: django-app-tls
 ---
 # Django VirtualService
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: django-virtual-service
+  name: django-virtualservice
+  namespace: default
 spec:
   hosts:
-  - "*"
+  - "api.m0d4s.me"
   gateways:
   - django-gateway
   http:
   - match:
     - uri:
+        prefix: /.well-known/acme-challenge/
+    route:
+    - destination:
+        host: cm-acme-http-solver-r6tdx.aks-istio-ingress.svc.cluster.local
+        port:
+          number: 8089
+  - match:
+    - uri:
         prefix: /api/
     route:
     - destination:
-        host: django-api
-        port:
-          number: 8000
-  - match:
-    - uri:
-        prefix: /admin/
-    route:
-    - destination:
-        host: django-api
+        host: django-api.default.svc.cluster.local
         port:
           number: 8000
 
@@ -48,70 +60,54 @@ apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: vue-gateway
+  namespace: default
 spec:
   selector:
-    istio: ingressgateway
+    istio: aks-istio-ingressgateway-external
   servers:
   - port:
       number: 80
       name: http
       protocol: HTTP
     hosts:
-    - "*"
+    - "*" # This is a wildcard host, NEEDS TO BE CHANGED
+    # tls:
+    #   httpsRedirect: true
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    hosts:
+    - "fssp.m0d4s.me"
+    tls:
+      mode: SIMPLE
+      credentialName: vue-app-tls
 ---
 # Vue VirtualService
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: vue-virtual-service
+  name: vue-virtualservice
+  namespace: default
 spec:
   hosts:
-  - "*"
+  - "fssp.m0d4s.me"
   gateways:
   - vue-gateway
   http:
   - match:
     - uri:
-        prefix: /
+        prefix: /.well-known/acme-challenge/
     route:
     - destination:
-        host: vuejs-service
+        host: cm-acme-http-solver-r6tdx.aks-istio-ingress.svc.cluster.local
         port:
-          number: 80
-
----
-# PGAdmin Gateway
-apiVersion: networking.istio.io/v1alpha3
-kind: Gateway
-metadata:
-  name: pgadmin-gateway
-spec:
-  selector:
-    istio: ingressgateway
-  servers:
-  - port:
-      number: 8081
-      name: http
-      protocol: HTTP
-    hosts:
-    - "*"
----
-# PGAdmin VirtualService
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: pgadmin-virtual-service
-spec:
-  hosts:
-  - "*"
-  gateways:
-  - pgadmin-gateway
-  http:
+          number: 8089
   - match:
     - uri:
         prefix: /
     route:
     - destination:
-        host: pgadmin-service
+        host: vuejs-service.default.svc.cluster.local
         port:
-          number: 8081
+          number: 80
