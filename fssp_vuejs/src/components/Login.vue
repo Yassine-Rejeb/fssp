@@ -105,11 +105,14 @@ function changeTheme() {
 
 <template>
   <v-container fluid>
-    <v-btn class="float-start " icon @click="changeTheme">
-        <v-icon
-          :icon="darkTheme ? 'mdi-weather-night' : 'mdi-weather-sunny'"
-        ></v-icon>
+    <!-- Theme change -->
+    <div style="position: absolute; top: 0; right: 0; margin: 10px;">
+      <v-btn class="float-start " icon @click="changeTheme">
+          <v-icon
+            :icon="darkTheme ? 'mdi-weather-night' : 'mdi-weather-sunny'"
+          ></v-icon>
       </v-btn>
+    </div>
     <v-overlay :model-value="isLoading" class="align-center justify-center">
       <v-progress-circular
         v-if="isLoading"
@@ -117,55 +120,67 @@ function changeTheme() {
         color="white"
       ></v-progress-circular>
     </v-overlay>
-    <v-row justify="center">
-      <v-col md="4">
-        <v-card style="width: 700px;" class="pa-4">
-          <v-card-title class="text-center">Welcome Back</v-card-title>
-          <v-card-item>
-            <v-form @submit.prevent="submit">
-              <v-text-field
-                prepend-inner-icon="mdi-email"
-                :rules="[rules.required, rules.email]"
-                v-model="form.email"
-                label="Email"
-              ></v-text-field>
+    <!-- Form -->
+    <div>
+      <v-row justify="center" class="centered-form-container">
+        <v-col md="4">
+          <v-card style="width: 700px;" class="pa-4">
+            <v-card-title class="text-center">Welcome Back</v-card-title>
+            <v-card-item>
+              <v-form @submit.prevent="submit">
+                <v-text-field
+                  prepend-inner-icon="mdi-email"
+                  :rules="[rules.required, rules.email]"
+                  v-model="form.email"
+                  label="Email"
+                ></v-text-field>
 
-              <v-text-field
-                type="password"
-                :rules="[rules.required]"
-                prepend-inner-icon="mdi-key"
-                v-model="form.password"
-                label="Password"
-              ></v-text-field>
+                <v-text-field
+                  type="password"
+                  :rules="[rules.required]"
+                  prepend-inner-icon="mdi-key"
+                  v-model="form.password"
+                  label="Password"
+                ></v-text-field>
 
-              <router-link
-                to="/ForgotPass"
-                v-model="form.forgot"
-                style="text-align: center; display: block; color: #1976d2;"
-                class="text-decoration-none">
-                  Forgot Your Password!
-              </router-link>
+                <router-link
+                  to="/ForgotPass"
+                  v-model="form.forgot"
+                  style="text-align: center; display: block; color: #1976d2;"
+                  class="text-decoration-none">
+                    Forgot Your Password!
+                </router-link>
 
-              <v-btn
-                color="primary"
-                variant="elevated"
-                type="submit"
-                block
-                class="mt-2"
-              >
-                Login
-              </v-btn>
-            </v-form>
-          </v-card-item>
+                <v-btn
+                  color="primary"
+                  variant="elevated"
+                  type="submit"
+                  block
+                  class="mt-2"
+                >
+                  Login
+                </v-btn>
+              </v-form>
+            </v-card-item>
 
-          <v-card-action>
-            <div class="mx-4">
-              <v-btn block to="/register"> Register </v-btn>
-            </div>
-          <v-alert class="mt-3" v-if="showAlert" type="error" closable @input="showAlert = false" v-html="alertContent" ></v-alert>
-          </v-card-action>
-        </v-card>
-      </v-col>
-    </v-row>
+            <v-card-action>
+              <div class="mx-4">
+                <v-btn block to="/register"> Register </v-btn>
+              </div>
+            <v-alert class="mt-3" v-if="showAlert" type="error" closable @input="showAlert = false" v-html="alertContent" ></v-alert>
+            </v-card-action>
+          </v-card>
+        </v-col>
+      </v-row>
+    </div>
   </v-container>
 </template>
+
+<style>
+.centered-form-container {
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  align-items: center; /* Centers vertically */
+  height: 90vh; /* Use the full height of the viewport */
+}
+</style>

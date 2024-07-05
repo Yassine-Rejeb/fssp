@@ -8,7 +8,7 @@ automountServiceAccountToken: true
 ---
 apiVersion: v1
 kind: Secret
-type : kubernetes.io/service-account-token
+type: kubernetes.io/service-account-token
 metadata:
   name: manager-service-account-token
   annotations: 
@@ -24,7 +24,7 @@ rules:
 # Allow the service account to create and manage Volumes , and mount them to the pods of the deployment 'django-deployment'
 - apiGroups: [""]
   resources: ["persistentvolumes", "persistentvolumeclaims"]
-  verbs: ["create", "delet  verbs: ["create", "delete", "get", "list", "watch"]
+  verbs: ["create", "delete", "get", "list", "watch"]
 - apiGroups: [""]
   resources: ["pods/exec", "pods"]
   verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
@@ -94,13 +94,18 @@ spec:
       targetPort: 1999
       nodePort: 31999
   type: NodePort
-:
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: kube-manager-hpa
+spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: kube-manager
   minReplicas: 1
-  maxReplicas: 2
+  maxReplicas: 10
   metrics:
   - type: Resource
     resource:

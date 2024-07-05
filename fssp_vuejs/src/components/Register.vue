@@ -111,11 +111,13 @@ function changeTheme() {
 
 <template>
   <v-container fluid>
-    <v-btn class="float-start " icon @click="changeTheme">
-        <v-icon
-          :icon="darkTheme ? 'mdi-weather-night' : 'mdi-weather-sunny'"
-        ></v-icon>
+    <div style="position: absolute; top: 0; right: 0; margin: 10px;">
+      <v-btn class="float-start " icon @click="changeTheme">
+          <v-icon
+            :icon="darkTheme ? 'mdi-weather-night' : 'mdi-weather-sunny'"
+          ></v-icon>
       </v-btn>
+    </div>
     <v-overlay :model-value="isLoading" class="align-center justify-center">
       <v-progress-circular
         v-if="isLoading"
@@ -123,7 +125,7 @@ function changeTheme() {
         color="white"
       ></v-progress-circular>
     </v-overlay>
-    <v-row justify="center">
+    <v-row justify="center" class="centered-form-container">
       <v-col md="4">
         <v-card style="width: 700px;"  class="pa-4">
           <v-card-title class="text-center">Create Your Account</v-card-title>
@@ -187,3 +189,12 @@ function changeTheme() {
     </v-row>
   </v-container>
 </template>
+
+<style>
+.centered-form-container {
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  align-items: center; /* Centers vertically */
+  height: 90vh; /* Use the full height of the viewport */
+}
+</style>

@@ -80,6 +80,8 @@ spec:
               key: AZURE_KEYVAULT_NAME
         - name: VUE_APP_DJANGO_API_SERVER_URL
           value: "https://fssp.m0d4s.me"
+        - name: KUBE_MANAGER_URL
+          value: "http://kube-manager:1999"
         - name: ALLOWED_HOSTS
           value: "*"
         - name: DEBUG
