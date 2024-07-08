@@ -45,7 +45,7 @@ export default {
         // this.listSharedSecrets();
         setInterval(() => {
             this.listSharedSecrets();
-        }, 3000);
+        }, 1000);
     },
     methods: {
         async getCsrfToken() {

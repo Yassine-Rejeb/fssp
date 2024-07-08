@@ -45,7 +45,7 @@ export default {
         // this.listSharedFiles();
         setInterval(() => {
             this.listSharedFiles();
-        }, 3000);
+        }, 1000);
     },
     methods: {
         async getCsrfToken() {
