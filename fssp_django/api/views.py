@@ -1240,15 +1240,11 @@ def getNotifications(request):
         # From the request session, get the user
         user = userAccount.objects.get(pk=request.session['user'])
         
-        # Get the notifications that the last word of the operation is the username of the current user and are not viewed
+        # Get the notifications that the last word of the operation is the username of the current user ()
         notifications = notification.objects.filter(operation__endswith=user.username)
-        # Get the unviewed notifications from that
-        for i in notifications:
-            if viewedNotifications.objects.filter(user=user, notification=i).exists():
-                notifications = notifications.exclude(NotifID=i.NotifID)
 
         # Now add to that list (notifications) the notifications of object deletion and display of objects shared with the current user
-        deletion_notifications = notification.objects.filter(operation__contains="Removed")
+        deletion_notifications = notification.objects.filter(operation__contains="removed")
         for i in deletion_notifications:
             # Check if the secret is shared with the user
             if notification.objects.filter(objectName=i.objectName, operation__contains="shared with user: "+user.username).exists() and not notification.objects.filter(objectName=i.objectName, operation__contains="Revoked access for user: "+user.username).exists():
@@ -1262,19 +1258,28 @@ def getNotifications(request):
         display_one_time_shared_notifications = notification.objects.filter(operation__contains="Displayed a one time shared secret")
         for i in display_one_time_shared_notifications:
             if notification.objects.filter(objectName=i.objectName, operation__contains="Displayed a one time shared secret").exists():
+                # print("HERE")
+                print(display_one_time_shared_notifications.filter(objectName=i.objectName))
                 notifications = notifications.union(display_one_time_shared_notifications.filter(objectName=i.objectName))
+                # print(notifications)
 
         expired_share_notifications = notification.objects.filter(operation__contains="Secret share validity expired")
         for i in expired_share_notifications:
             if notification.objects.filter(objectName=i.objectName, operation__contains="Secret share validity expired").exists():
                 notifications = notifications.union(expired_share_notifications.filter(objectName=i.objectName))
 
+        # Get the unviewed notifications from that
+        final_notifications = []
+        for i in notifications:
+            if not viewedNotifications.objects.filter(notification=i, user=user).exists():
+                final_notifications.append(i)
+
         # Get the number of notifications
-        num_notifications = len(notifications)
+        num_notifications = len(final_notifications)
 
         # Create a json object that contains: id, usename, operation, timestamp, object type, object name
         data = []
-        for i in notifications:
+        for i in final_notifications:
             data.append({
                 "id": i.NotifID,
                 "user": i.user.username,
