@@ -995,12 +995,9 @@ def listSharedSecrets(request):
 
         shares = []
         for i in shared:
-            try:
-                if object.objects.filter(OId=i['object_id']).exists() and secret.objects.get(pk=i['object_id']).secretName:
-                    SecretName = secret.objects.get(pk=i['object_id']).secretName 
-                    shares.append(i)
-            except secret.DoesNotExist:
-                print("Exception: Seeked secret does not exist")        
+            if object.objects.filter(OId=i['object_id']).exists() and secret.objects.get(OId=i['object_id']).secretName:
+                SecretName = secret.objects.get(OId=i['object_id']).secretName
+                shares.append(i)
         
         # Create a json object from the shares variable that contains: Secret Name, DatetimeShared, Owner fullname and username
         result = []
