@@ -110,7 +110,7 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_DB_NAME', 'fssp'),
         'USER': os.environ.get('POSTGRES_DB_USER', 'fssp_user'),
         'PASSWORD': os.environ.get('POSTGRES_DB_PASSWORD', 'fssp_passme+.'),
-        'HOST': os.environ.get('POSTGRES_DB_HOST', '127.0.0.1'),
+        'HOST': os.environ.get('POSTGRES_DB_HOST', 'postgres'),
         'PORT': '5432',
     }
 }
@@ -171,22 +171,11 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 SESSION_COOKIE_HTTPONLY = True
 
-import json
-## Load the Azure Identity from the json file
-# with open('azure-identity.json') as f:
-#     data = json.load(f)
-#     AZURE_KEYVAULT_NAME = data['keyVaultName']
-#     AZURE_TENANT_ID = data['tenantId']
-#     AZURE_CLIENT_ID = data['clientId']
-#     AZURE_CLIENT_SECRET = data['clientSecret']
-
-## Get Azure Key Vault parameters from the environment variables
-AZURE_TENANT_ID = os.environ.get('AZURE_TENANT_ID', '')
-AZURE_CLIENT_ID = os.environ.get('AZURE_CLIENT_ID', '')
-AZURE_CLIENT_SECRET = os.environ.get('AZURE_CLIENT_SECRET', '')
-AZURE_KEYVAULT_NAME = os.environ.get('AZURE_KEYVAULT_NAME', '')
+# Get whether to use Azure Managed Identity from the environment variable
 AZURE_MANAGED_IDENTITY = os.environ.get('AZURE_MANAGED_IDENTITY', 'False')
 
+## Get Azure Key Vault parameters from the environment variables
+AZURE_KEYVAULT_NAME = os.environ.get('AZURE_KEYVAULT_NAME', '')
 # Azure Key Vault URL
 AZURE_KEYVAULT_URL = f"https://{AZURE_KEYVAULT_NAME}.vault.azure.net/"
 
@@ -194,13 +183,21 @@ client = None
 
 if AZURE_MANAGED_IDENTITY == 'False':
     pass
-    # # Import libraries
-    # from azure.identity import ClientSecretCredential
-    # from azure.keyvault.secrets import SecretClient
+    # Import libraries
+    from azure.identity import ClientSecretCredential
+    from azure.keyvault.secrets import SecretClient
 
-    # # Create a secret client
-    # credential = ClientSecretCredential( AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET)
-    # client = SecretClient(vault_url=AZURE_KEYVAULT_URL, credential=credential)
+    # Get the Azure Client Secret from the environment variable
+    AZURE_CLIENT_SECRET = os.environ.get('AZURE_CLIENT_SECRET', '')
+    # Get the Azure Client ID from the environment variable
+    AZURE_CLIENT_ID = os.environ.get('AZURE_CLIENT_ID', '')
+    # Get the Azure Tenant ID from the environment variable
+    AZURE_TENANT_ID = os.environ.get('AZURE_TENANT_ID', '')
+
+    # Create a secret client
+    credential = ClientSecretCredential( AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET)
+    client = SecretClient(vault_url=AZURE_KEYVAULT_URL, credential=credential)
+
 # Another way to connect to the Azure Key Vault is when the app is hosted in Azure
 elif AZURE_MANAGED_IDENTITY == 'True':
     # Import libraries

@@ -8,6 +8,10 @@ desktop.ini
 fssp_django/smtp_data.json
 fssp_django/azure-identity.json
 fssp_django/profilePics/*
+.env
+.env_pg
+docker-compose.yml
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

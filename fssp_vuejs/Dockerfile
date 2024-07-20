@@ -1,5 +1,8 @@
 # Use Node.js image as base
-FROM node:latest as build-stage
+# FROM node:latest as build-stage
+
+# Use a specific Node.js image compatible with ARM64
+FROM arm64v8/node:latest as build-stage
 
 # Create a directory for the application
 RUN mkdir /app -p
@@ -20,7 +23,10 @@ COPY . .
 RUN npm run build
 
 # Stage 2 - Production environment
-FROM nginx:stable-alpine as production-stage
+# FROM nginx:stable-alpine as production-stage
+
+# Use a specific Nginx image compatible with ARM64
+FROM arm64v8/nginx:stable-alpine as production-stage
 
 # Copy built Vue.js files to nginx directory
 COPY --from=build-stage /app/dist /usr/share/nginx/html

@@ -26,8 +26,7 @@ spec:
     spec:
       containers:
       - name: django
-        image: elyass359/fssp-django:v3.2
-        imagePullPolicy: Always
+        image: elyass359/fssp-django:v3.2-arm
         resources:
           requests:
             memory: "128Mi"

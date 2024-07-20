@@ -67,7 +67,7 @@ spec:
       automountServiceAccountToken: true
       containers:
       - name: kube-manager
-        image: elyass359/fssp_kube_manager:v1.3
+        image: elyass359/fssp_kube_manager:v1.5-arm
         imagePullPolicy: Always
         resources:
           requests:
