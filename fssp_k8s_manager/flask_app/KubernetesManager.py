@@ -77,6 +77,7 @@ class KubeManager:
             spec=client.V1PersistentVolumeSpec(
                 capacity={"storage": "500Mi"},
                 access_modes=["ReadWriteOnce"],
+                storage_class_name="default",
                 host_path=client.V1HostPathVolumeSource(path="/mnt/fssp_files")
             )
         )

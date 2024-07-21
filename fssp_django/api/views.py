@@ -494,49 +494,56 @@ def resetPassword(request):
 # Encrypt with user's public key
 def pubEncrypt(user, plain):
     try:
-        # The following is a static implementation of the encryption process using the auto generated key-pair in the ./ssl directory
-        public_key = RSA.import_key(open("./ssl/.crt.crt").read())
-        cipher_rsa = PKCS1_OAEP.new(public_key)
-        encrypted = cipher_rsa.encrypt(plain)
-        return encrypted
-
-        # # Get the public key of the user from the key vault
-        # publicKey = client.get_secret("publicKey-"+str(user.pk)).value
-        
-        # # Import the public key
-        # public_key = RSA.import_key("ssh-rsa "+publicKey)
-        
-        # # Create an RSA cipher object with OAEP padding
-        # cipher_rsa = PKCS1_OAEP.new(public_key)
-        
-        # # Encrypt the plain text
-        # encrypted = cipher_rsa.encrypt(plain)
-        
-        # return encrypted
+        # According to the env variable AZURE_MANAGED_IDENTITY
+        managed = os.environ.get('AZURE_MANAGED_IDENTITY', 'False')
+        if not managed:
+            # The following is a static implementation of the encryption process using the auto generated key-pair in the ./ssl directory
+            public_key = RSA.import_key(open("./ssl/.crt.crt").read())
+            cipher_rsa = PKCS1_OAEP.new(public_key)
+            encrypted = cipher_rsa.encrypt(plain)
+            return encrypted
+        else:
+            # Get the public key of the user from the key vault
+            publicKey = client.get_secret("publicKey-"+str(user.pk)).value
+            
+            # Import the public key
+            public_key = RSA.import_key("ssh-rsa "+publicKey)
+            
+            # Create an RSA cipher object with OAEP padding
+            cipher_rsa = PKCS1_OAEP.new(public_key)
+            
+            # Encrypt the plain text
+            encrypted = cipher_rsa.encrypt(plain)
+            
+            return encrypted
     except Exception as e:
         print("EXCEPTION in pubEncrypt: ", e)
 
 # Decrypt with user's private key
 def privDecrypt(user, encrypted):
     try:
-        # The following is a static implementation of the decryption process using the auto generated key-pair in the ./ssl directory
-        private_key = RSA.import_key(open("./ssl/.crt.key").read())
-        cipher_rsa = PKCS1_OAEP.new(private_key)
-        plain = cipher_rsa.decrypt(encrypted)
-        return plain
-        # # Get the private key of the user from the key vault
-        # privateKey = client.get_secret("privateKey-"+str(user.pk)).value
-        
-        # # Import the private key
-        # private_key = RSA.import_key(privateKey)
-        
-        # # Create an RSA cipher object with OAEP padding
-        # cipher_rsa = PKCS1_OAEP.new(private_key)
-        
-        # # Decrypt the plain text
-        # plain = cipher_rsa.decrypt(encrypted)
-        
-        # return plain
+        # According to the env variable AZURE_MANAGED_IDENTITY
+        managed = os.environ.get('AZURE_MANAGED_IDENTITY', 'False')
+        if not managed:
+            # The following is a static implementation of the decryption process using the auto generated key-pair in the ./ssl directory
+            private_key = RSA.import_key(open("./ssl/.crt.key").read())
+            cipher_rsa = PKCS1_OAEP.new(private_key)
+            plain = cipher_rsa.decrypt(encrypted)
+            return plain
+        else:
+            # Get the private key of the user from the key vault
+            privateKey = client.get_secret("privateKey-"+str(user.pk)).value
+            
+            # Import the private key
+            private_key = RSA.import_key(privateKey)
+            
+            # Create an RSA cipher object with OAEP padding
+            cipher_rsa = PKCS1_OAEP.new(private_key)
+            
+            # Decrypt the plain text
+            plain = cipher_rsa.decrypt(encrypted)
+            
+            return plain
     except Exception as e:
         print("EXCEPTION in privDecrypt: ", e)
     

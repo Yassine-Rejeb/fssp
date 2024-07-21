@@ -183,20 +183,20 @@ client = None
 
 if AZURE_MANAGED_IDENTITY == 'False':
     pass
-    # Import libraries
-    from azure.identity import ClientSecretCredential
-    from azure.keyvault.secrets import SecretClient
+    # # Import libraries
+    # from azure.identity import ClientSecretCredential
+    # from azure.keyvault.secrets import SecretClient
 
-    # Get the Azure Client Secret from the environment variable
-    AZURE_CLIENT_SECRET = os.environ.get('AZURE_CLIENT_SECRET', '')
-    # Get the Azure Client ID from the environment variable
-    AZURE_CLIENT_ID = os.environ.get('AZURE_CLIENT_ID', '')
-    # Get the Azure Tenant ID from the environment variable
-    AZURE_TENANT_ID = os.environ.get('AZURE_TENANT_ID', '')
+    # # Get the Azure Client Secret from the environment variable
+    # AZURE_CLIENT_SECRET = os.environ.get('AZURE_CLIENT_SECRET', '')
+    # # Get the Azure Client ID from the environment variable
+    # AZURE_CLIENT_ID = os.environ.get('AZURE_CLIENT_ID', '')
+    # # Get the Azure Tenant ID from the environment variable
+    # AZURE_TENANT_ID = os.environ.get('AZURE_TENANT_ID', '')
 
-    # Create a secret client
-    credential = ClientSecretCredential( AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET)
-    client = SecretClient(vault_url=AZURE_KEYVAULT_URL, credential=credential)
+    # # Create a secret client
+    # credential = ClientSecretCredential( AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET)
+    # client = SecretClient(vault_url=AZURE_KEYVAULT_URL, credential=credential)
 
 # Another way to connect to the Azure Key Vault is when the app is hosted in Azure
 elif AZURE_MANAGED_IDENTITY == 'True':

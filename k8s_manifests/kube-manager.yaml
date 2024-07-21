@@ -48,6 +48,32 @@ roleRef:
   name: manager-rbac
 
 ---
+# Add specific ClusterRole and ClusterRoleBinding 
+# for the PersistentVolume and PersistentVolumeClaim
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-cluster-role
+rules:
+- apiGroups: [""]
+  resources: ["persistentvolumes", "persistentvolumeclaims"]
+  verbs: ["create", "delete", "get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: manager-cluster-role-binding
+subjects:
+- kind: ServiceAccount
+  name: manager-service-account
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: manager-cluster-role
+
+---
 # Deployment for kube manager
 apiVersion: apps/v1
 kind: Deployment
@@ -67,7 +93,7 @@ spec:
       automountServiceAccountToken: true
       containers:
       - name: kube-manager
-        image: elyass359/fssp_kube_manager:v1.5-arm
+        image: elyass359/fssp_kube_manager:v1.6-arm
         imagePullPolicy: Always
         resources:
           requests:
@@ -105,17 +131,17 @@ spec:
     kind: Deployment
     name: kube-manager
   minReplicas: 1
-  maxReplicas: 10
+  maxReplicas: 5
   metrics:
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 75
+        averageUtilization: 90
   - type: Resource
     resource:
       name: memory
       target:
         type: Utilization
-        averageUtilization: 75
+        averageUtilization: 90

@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
       - name: django
-        image: elyass359/fssp-django:v3.2-arm
+        image: elyass359/fssp-django:v3.4-arm-test
         resources:
           requests:
             memory: "128Mi"
@@ -84,9 +84,9 @@ spec:
         - name: ALLOWED_HOSTS
           value: "*"
         - name: DEBUG
-          value: "True"
-        - name: AZURE_MANAGED_IDENTITY
           value: "False"
+        - name: AZURE_MANAGED_IDENTITY
+          value: "True"
       volumes:
       - name: profile-pics
         hostPath:
