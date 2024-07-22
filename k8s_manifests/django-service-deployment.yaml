@@ -6,7 +6,7 @@ metadata:
 type: Opaque
 data:
   AZURE_TENANT_ID: ODczNjk0NDgtNzZlYS00YzYyLWE0M2EtMWZjNmRiMjIwYjA0
-  AZURE_CLIENT_ID: MTU0MzQzZDktN2FjYS00NmE2LTg1OTYtOWQ0YTZlMDlkYTlm
+  AZURE_CLIENT_ID: M2M4YzA2MTQtNjJjZC00OWY4LTliZjgtZDQ2NjM1NjZhMTU3Cg==
   AZURE_CLIENT_SECRET: RmlTOFF+ZFhmVnFRWTd0S0dQY3NCX3N3OGRiSS1oWFZhQ0twQ2J6Tw==
   AZURE_KEYVAULT_NAME: ZnNzcC1rZXlwYWlycw==
 ---
@@ -26,7 +26,8 @@ spec:
     spec:
       containers:
       - name: django
-        image: elyass359/fssp-django:v3.4-arm-test
+        image: elyass359/fssp-django:v3.5-arm
+        imagePullPolicy: Always
         resources:
           requests:
             memory: "128Mi"
@@ -116,7 +117,7 @@ spec:
     kind: Deployment
     name: django-deployment
   minReplicas: 1
-  maxReplicas: 5
+  maxReplicas: 1
   metrics:
   - type: Resource
     resource:

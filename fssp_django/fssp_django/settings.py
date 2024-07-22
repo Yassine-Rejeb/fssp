@@ -176,6 +176,13 @@ AZURE_MANAGED_IDENTITY = os.environ.get('AZURE_MANAGED_IDENTITY', 'False')
 
 ## Get Azure Key Vault parameters from the environment variables
 AZURE_KEYVAULT_NAME = os.environ.get('AZURE_KEYVAULT_NAME', '')
+
+# Get the Client ID 
+AZURE_CLIENT_ID = os.environ.get('AZURE_CLIENT_ID', '')
+if len(AZURE_CLIENT_ID) != 36:
+    # Remove the last character if it is a newline character
+    AZURE_CLIENT_ID = AZURE_CLIENT_ID[:-1]
+
 # Azure Key Vault URL
 AZURE_KEYVAULT_URL = f"https://{AZURE_KEYVAULT_NAME}.vault.azure.net/"
 
@@ -204,8 +211,9 @@ elif AZURE_MANAGED_IDENTITY == 'True':
     from azure.identity import ManagedIdentityCredential
     from azure.keyvault.secrets import SecretClient
 
-    # Create a secret client
-    credential = ManagedIdentityCredential()
+    # Create a secret client using a user-assigned managed identity
+    credential = ManagedIdentityCredential(client_id=AZURE_CLIENT_ID)
+    # credential = DefaultAzureCredential()
     client = SecretClient(vault_url=AZURE_KEYVAULT_URL, credential=credential)
 
 
