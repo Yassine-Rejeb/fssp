@@ -42,7 +42,7 @@ spec:
         prefix: /.well-known/acme-challenge/
     route:
     - destination:
-        host: cm-acme-http-solver-r6tdx.aks-istio-ingress.svc.cluster.local
+        host: cm-acme-http-solver-qswgj.aks-istio-ingress.svc.cluster.local
         port:
           number: 8089
   - match:
@@ -100,7 +100,7 @@ spec:
         prefix: /.well-known/acme-challenge/
     route:
     - destination:
-        host: cm-acme-http-solver-r6tdx.aks-istio-ingress.svc.cluster.local
+        host: cm-acme-http-solver-ws59f.aks-istio-ingress.svc.cluster.local
         port:
           number: 8089
   - match:

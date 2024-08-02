@@ -1,0 +1,65 @@
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  namespace: default
+  name: account-default-manager-cpjha
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: role-default-manager-cpjha
+rules:
+- apiGroups: [""]
+  resources: ["pods", "namespaces"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: ["chaos-mesh.org"]
+  resources: [ "*" ]
+  verbs: ["get", "list", "watch", "create", "delete", "patch", "update"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bind-default-manager-cpjha
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: account-default-manager-cpjha
+  namespace: default
+roleRef:
+  kind: Role
+  name: role-default-manager-cpjha
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: chaos-mesh-manager
+rules:
+  - apiGroups: ["chaos-mesh.org"]
+    resources: ["*"] #["schedules"]
+    verbs: ["*"] #["list", "get", "watch", "create", "update", "patch", "delete"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: chaos-mesh-manager-binding
+subjects:
+  - kind: ServiceAccount
+    name: account-default-manager-cpjha
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: chaos-mesh-manager
+  apiGroup: rbac.authorization.k8s.io
+
+## To Connect to the Chaos Mesh Dashboard:
+# Create a Token with the same name as the ServiceAccount
+# kubectl create token account-default-manager-cpjha -n default
+# Save that token as a generic secret
+# kubectl create secret generic account-default-manager-cpjha-token --from-literal=token=<PREV-CMD-RSLT> -n default
+# kubectl describe -n default secrets account-default-manager-cpjha-token -o jsonpath="{.data.token}" 

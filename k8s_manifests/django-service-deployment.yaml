@@ -6,9 +6,9 @@ metadata:
 type: Opaque
 data:
   AZURE_TENANT_ID: ODczNjk0NDgtNzZlYS00YzYyLWE0M2EtMWZjNmRiMjIwYjA0
-  AZURE_CLIENT_ID: M2M4YzA2MTQtNjJjZC00OWY4LTliZjgtZDQ2NjM1NjZhMTU3Cg==
+  AZURE_CLIENT_ID: MTNiNDUyYmMtYzM2MC00NGZiLTk5MzMtY2YwZjFiZmI2ZDU2Cg==
   AZURE_CLIENT_SECRET: RmlTOFF+ZFhmVnFRWTd0S0dQY3NCX3N3OGRiSS1oWFZhQ0twQ2J6Tw==
-  AZURE_KEYVAULT_NAME: ZnNzcC1rZXlwYWlycw==
+  AZURE_KEYVAULT_NAME: ZnNzcC1rZXl2YXVsdA==
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -117,7 +117,7 @@ spec:
     kind: Deployment
     name: django-deployment
   minReplicas: 1
-  maxReplicas: 1
+  maxReplicas: 5
   metrics:
   - type: Resource
     resource:
