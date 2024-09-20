@@ -177,7 +177,7 @@ def sendEmail(email, subject, msg):
 def sendVerificationEmail(user, email):
     try:
         # Set the token expiration time (e.g., 24 hours)
-        token_expiration = timezone.now() + timedelta(hours=24)
+        token_expiration = timezone.now() + timedelta(hours=4)
 
         # Generate a token for the user with expiration
         token = CustomTokenGenerator().make_token(user)
@@ -496,13 +496,13 @@ def pubEncrypt(user, plain):
     try:
         # According to the env variable AZURE_MANAGED_IDENTITY
         managed = os.environ.get('AZURE_MANAGED_IDENTITY', 'False')
-        if not managed:
+        if managed == "False":
             # The following is a static implementation of the encryption process using the auto generated key-pair in the ./ssl directory
             public_key = RSA.import_key(open("./ssl/.crt.crt").read())
             cipher_rsa = PKCS1_OAEP.new(public_key)
             encrypted = cipher_rsa.encrypt(plain)
             return encrypted
-        else:
+        elif managed == "True":
             # Get the public key of the user from the key vault
             publicKey = client.get_secret("publicKey-"+str(user.pk)).value
             
@@ -2029,57 +2029,61 @@ def downloadSharedFile(request):
 
 # This endpoint is used to get all eventLogs relevent to a user and only files (not secrets)
 def getUserEventLogsFiles(request):
-    # try:
-    # Check if the user is already logged in
-    if request.session.session_key is None:
-        return JsonResponse({"message": "Unauthorized access"})
-    # Check if the session is expired
-    if 'expires' in request.session:
-        expiry = request.session['expires']
-        if datetime.now().timestamp() > expiry:
+    try:
+        # Check if the user is already logged in
+        if request.session.session_key is None:
             return JsonResponse({"message": "Unauthorized access"})
-    else :
-        return JsonResponse({"message": "Unauthorized access"})
-    
-    # From the request session, get the user
-    user = userAccount.objects.get(pk=request.session['user'])
-    
-    # Get all the eventLogs relevant to the user
-    ## Get eventLogs for events done by the user
-    eventLogs = eventLog.objects.filter(user=user).values()
-    ## Get eventLogs for events done to the user (or his files)
-    for event in eventLog.objects.all():
-        ops = event.operation.split(" ")
-        if user.username in ops or user.username+"'s" in event.operation:
-            eventLogs = eventLogs.union(eventLog.objects.filter(pk=event.pk).values())
-        # eventlogs = eventLogs.union
-    # Create a json object that contains: usename, fullname, operation, timestamp, file
-    data = []
-    for log in eventLogs:
-        # print(log)
-        uid = int(log['user_id'])
-        oid = int(log['object_id'])
-        # print(oid)
-        data.append({
-            "username": userAccount.objects.get(pk=uid).username,
-            "fullname": userAccount.objects.get(pk=uid).fullname,
-            "operation": log['operation'],
-            "file": myfile.objects.get(OId=oid).fileName,
-            "date": log['timestamp'],
-        })
+        # Check if the session is expired
+        if 'expires' in request.session:
+            expiry = request.session['expires']
+            if datetime.now().timestamp() > expiry:
+                return JsonResponse({"message": "Unauthorized access"})
+        else :
+            return JsonResponse({"message": "Unauthorized access"})
+        
+        # From the request session, get the user
+        user = userAccount.objects.get(pk=request.session['user'])
+        
+        # Get all the eventLogs relevant to the user
+        ## Get eventLogs for events done by the user
+        eventLogs = eventLog.objects.filter(user=user).values()
+        ## Get eventLogs for events done to the user (or his files)
+        for event in eventLog.objects.all():
+            ops = event.operation.split(" ")
+            if user.username in ops or user.username+"'s" in event.operation:
+                eventLogs = eventLogs.union(eventLog.objects.filter(pk=event.pk).values())
+            # eventlogs = eventLogs.union
+        print("EVENT LOGS: ", eventLogs)
+        # Create a json object that contains: usename, fullname, operation, timestamp, file
+        data = []
+        for log in eventLogs:
+            # print(log)
+            uid = int(log['user_id'])
+            oid = int(log['object_id'])
+            # print(oid)
+            data.append({
+                "username": userAccount.objects.get(pk=uid).username,
+                "fullname": userAccount.objects.get(pk=uid).fullname,
+                "operation": log['operation'],
+                "file": myfile.objects.get(pk=oid).fileName,
+                "date": log['timestamp'],
+            })
 
-    # Replace all instances of the username in the eventLogs with the word "You"
-    for i in data:
-        if i['username'] == user.username:
-            i['username'] = "YOU"
-        if user.username in i['operation'].split(" "):
-            i['operation'] = i['operation'].replace(user.username, "YOU")
+        # Let's see what we got
+        #print("DATA: ", data)
 
-    return JsonResponse({"message": 'Success', 
-    'data': data}, safe=False)
-    # except Exception as e:
-    #     print("EXCEPTION in getUserEventLogsFiles: An error occurred while processing your data:", e)
-    #     return JsonResponse({"message": "An error occurred while processing your data"})
+        # Replace all instances of the username in the eventLogs with the word "You"
+        for i in data:
+            if i['username'] == user.username:
+                i['username'] = "YOU"
+            if user.username in i['operation'].split(" "):
+                i['operation'] = i['operation'].replace(user.username, "YOU")
+
+        return JsonResponse({"message": 'Success', 
+        'data': data}, safe=False)
+    except Exception as e:
+        print("EXCEPTION in getUserEventLogsFiles: An error occurred while processing your data:", e)
+        return JsonResponse({"message": "An error occurred while processing your data"})
 
 # This endpoint is used to list shared files with a user
 def listSharedFiles(request):

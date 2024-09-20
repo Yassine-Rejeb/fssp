@@ -131,9 +131,6 @@ class share(models.Model):
     def getObject(self):
         return self.object
 
-    def getPermission(self):
-        return self.permission
-
     class Meta:
         
         ordering = ['owner']
