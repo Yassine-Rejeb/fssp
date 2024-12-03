@@ -3,6 +3,7 @@ node_modules
 /dist
 .tmp*
 PFE
+fssp_k8s_manager/k8s_manager/
 fssp_django/api/migrations/
 desktop.ini
 fssp_django/smtp_data.json
