@@ -39,3 +39,11 @@ This is a web application designed for secure **file and secret sharing**, devel
     ├── k8s_manifests/      # Kubernetes manifests
     └── README.md
     ```
+  **fssp_vuejs** is the frontend application, built with Vue.js.
+  **fssp_django** is the backend application, built with Django Restful API.
+  **fssp_k8s_manager** is a backend-accessible API for querying Kubernetes resources made for the purpose of storing the files the users upload.
+  **k8s_manifests** is the Kubernetes manifests for the deployment.
+---
+
+## 📝 License
+This project is licensed under the MIT License.
